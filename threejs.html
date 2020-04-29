@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+	<title>Nexus threejs</title>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/97/three.js"></script>
+	<script src="js/nexus.js"></script>
+	<script src="js/nexus_three.js"></script>
+	<script src="js/trackball_three.js"></script>
+	<script src="js/onEvent.js"></script>
+	<script type='text/javascript' src='js/DAT.GUI.min.js'></script>
+	<link type="text/css" rel="stylesheet" href="css/menu.css"/>
+
+</head>
+<body>
+	<div style="width:100% box-sizing: border-box;">
+
+		<div style="background-color:#f3f7f0; width:100% text-align:center;">
+			<h1 style= "color: grey; font-size:28px;">Web App Prototype</h1>
+		</div>
+
+		<div style="background-color:#f3f7f0; height:620px; width:300px; float:left;">
+				<ul>
+					<li><a class="active" href="default.asp">Home</a></li>
+					<li><a href="news.asp">About</a></li>
+					<li><a href="contact.asp">News</a></li>
+					<li><a href="about.asp">Contact</a></li>
+				</ul>
+				<h4>Choose your specialization and Login / SignUp for more features and custom-made content.</h4>
+			<div class="navbar">
+			  <div class="dropdown">
+			    <button class="dropbtn">Scientist
+			      <i class="fa fa-caret-down"></i>
+			    </button>
+			    <div class="dropdown-content">
+			      <a href="#">Archaeologist/Architect</a>
+			      <a href="#">Historian/Philologist/Theologian</a>
+			    </div>
+			  </div>
+
+			  <div class="dropdown">
+			    <button class="dropbtn">Professional
+			      <i class="fa fa-caret-down"></i>
+			    </button>
+			    <div class="dropdown-content">
+			      <a href="#">Businessman in the Tourism/Commerce Zone</a>
+			      <a href="#">Tour Guide</a>
+			    </div>
+			  </div>
+			  <div class="dropdown">
+			    <button class="dropbtn">Educator
+			      <i class="fa fa-caret-down"></i>
+			    </button>
+			    <div class="dropdown-content">
+			     <a href="#">Teacher</a>
+			    </div>
+			  </div>
+			</div>
+
+		</div>
+
+		<div id="container" style="float:left;"></div>
+
+		<div style="background-color:#f3f7f0; height:620px; width:360px; float:right;">
+			<div class="wrap">
+				<div class="search">
+					<input type="text" class="searchTerm" placeholder="What are you looking for?">
+					<button type="submit" class="searchButton">
+						<i class="fa fa-search"></i>
+					</button>
+				</div>
+			</div>
+		</div>
+
+		<div style="background-color:#cec3c1; clear:both">
+			<center>
+				Copyright © 2020 Lab. of Photogrammetry, NTUA
+			</center>
+		</div>
+
+	</div>
+</body>
+
+<script>
+	var scene = new THREE.Scene();
+	scene.fog = new THREE.Fog(0x050505, 2000, 3500);
+	scene.add(new THREE.AmbientLight(0x444444));
+	scene.background = new THREE.Color("rgb(25, 50, 60)");
+
+	var camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 4000);
+	camera.position.set(0, 0, 3);
+
+	var controls = new THREE.TrackballControls(camera);
+	controls.target.set(0, 0, -1);
+	controls.rotateSpeed = 2.0;
+	controls.zoomSpeed = 1;
+	controls.panSpeed = 0.8;
+	controls.noZoom = false;
+	controls.noPan = false;
+	controls.staticMoving = true;
+	controls.dynamicDampingFactor = 0.3;
+	controls.keys = [65, 83, 68];
+	controls.addEventListener('change', function() {
+		redraw = true;
+	});
+
+	var light1 = new THREE.DirectionalLight(0xffffff, 1.0);
+	light1.position.set(1, 1, -1);
+	scene.add(light1);
+
+	var light2 = new THREE.DirectionalLight(0xffffff, 1.0);
+	light2.position.set(-1, -1, 1);
+	scene.add(light2);
+
+	var renderer = new THREE.WebGLRenderer({
+		antialias: false
+	});
+	renderer.setClearColor(scene.fog.color);
+	renderer.setPixelRatio(window.devicePixelRatio);
+	renderer.setSize(850, 620);
+
+	var container = document.getElementById('container');
+	container.appendChild(renderer.domElement);
+
+	var threeOnEvent = new THREE.onEvent(scene, camera);
+
+	var gui = new dat.GUI();
+	gui.domElement.id = 'gui';
+
+	var parameters = {
+		a: 200, // numeric
+		b: 200, // numeric slider
+		c: "Enable Hotspots", // string
+		d: false, // boolean (checkbox)
+		e: "#ff8800", // color (hex)
+		f: function() {
+			alert("Running on 60FPS")
+		},
+		v: 0,
+		w: "...",
+		x: 0,
+		y: 0,
+		z: 0
+	};
+
+	gui.add(parameters, 'a').name('Number of Vertices');
+	gui.add(parameters, 'b').min(128).max(256).step(16).name('Section');
+	gui.add(parameters, 'c').name('String');
+	gui.add(parameters, 'd').name('Shadows');
+
+	gui.addColor(parameters, 'e').name('Color');
+
+	var numberList = [1, 2, 3];
+	gui.add(parameters, 'v', numberList).name('Instances');
+
+	var stringList = ["One", "Two", "Three"];
+	gui.add(parameters, 'w', stringList).name('Shaders');
+
+	gui.add(parameters, 'f').name('Performance');
+
+	var folder1 = gui.addFolder('Coordinates');
+	folder1.add(parameters, 'x');
+	folder1.add(parameters, 'y');
+	folder1.close();
+	gui.open();
+	/*
+	function createSphere() {
+				// create a hotspot
+				var geometry = new THREE.SphereGeometry(0.015,32,32);
+				var material = new THREE.MeshLambertMaterial( { color: 0xef6500,needsUpdate: true,opacity:1,transparent:true} );
+				var ball1 = new THREE.Mesh( geometry, material );
+				ball1.position.set(-0.09,-0.1,1.89);
+				ball1.castShadow = true;
+
+				var ball2 = new THREE.Mesh( geometry, material );
+				ball2.position.set(-0.0000001,0,1.9);
+				ball2.castShadow = true;
+
+				var ball3 = new THREE.Mesh( geometry, material );
+				ball3.position.set(-0.06,-0.1,1.89);
+				ball3.castShadow = true;
+
+				var group = new THREE.Group();
+				group.add(ball1);
+				group.add(ball2);
+				group.add(ball3);
+				this.scene.add(group);
+	            var isclick = false;
+
+				group.on('hover',function(m) {
+					document.body.style.cursor = 'pointer';
+					m.material.opacity = 0.5;
+				},function(m) {
+					m.material.opacity = 1;
+					document.body.style.cursor = 'initial';
+				});
+				group.on('click',function(m) {
+	                if(!isclick) {
+						m.position.y = 0;
+	                    m.material.color = 0x00aadd;
+	                    isclick = true;
+	                } else {
+						m.position.y = 0;
+					    m.scale.set(1,1,1);
+	                    isclick = false;
+	                }
+				}); }
+	*/
+
+
+	function onNexusLoad() {
+		var s   = 1/nexus_obj.geometry.boundingSphere.radius;
+		var target = new THREE.Vector3();
+		var p = nexus_obj.geometry.boundingBox.getCenter(target).negate();
+
+		nexus_obj.position.set(p.x*s, p.y*s, p.z*s);
+		nexus_obj.scale.set(s, s, s);
+		redraw = true;
+
+	//	nexus_obj.material = new THREE.PointsMaterial( {  size:3, color: 0x00ff00, transparent: false, opacity:0.25 } );
+	}
+
+	function getURLParameter(name) {
+		return decodeURIComponent((new RegExp('[?|&]' + name + '=' + '([^&;]+?)(&|#|;|$)').exec(location.search) || [null, ''])[1].replace(/\+/g, '%20')) || null;
+	}
+
+	var model = getURLParameter('model') || "models/alissos.nxz";
+
+	var nexus_obj = new NexusObject(model, onNexusLoad, function() { redraw = true; }, renderer);
+	scene.add(nexus_obj);
+
+	window.addEventListener( 'resize', onWindowResize, false );
+
+	function onWindowResize() {
+		camera.aspect = window.innerWidth / window.innerHeight;
+		camera.updateProjectionMatrix();
+
+		renderer.setSize( window.innerWidth, window.innerHeight );
+
+		controls.handleResize();
+		controls.update();
+		redraw = true;
+	}
+
+	var redraw = true;
+	function animate() {
+		requestAnimationFrame(animate);
+
+		controls.update();
+
+		if(redraw) {
+			renderer.render( scene, camera );
+			redraw = false;
+		}
+	}
+
+	animate();
+
+	//createSphere();
+</script>
+
+
+</html>
